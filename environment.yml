@@ -1,0 +1,16 @@
+name: dfe-cnn
+channels:
+  - conda-forge
+dependencies:
+  - pip
+  - slim
+  - tensorflow
+  - scipy
+  - numpy
+  - matplotlib
+  - ipykernel
+  - dadi
+  - multiprocess
+  - pip:
+    # - git+https://github.com/lntran26/stdpopsim.git@modified-dfe
+    - scikit-allel
