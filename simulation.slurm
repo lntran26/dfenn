@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=dfenn_test_sim_2Mb
+#SBATCH --job-name=dfenn_test_sim_stdpopsim_API
 #SBATCH --output=outfiles/%x-%j.out
 #SBATCH --error=outfiles/%x-%j.err
 #SBATCH --account=rgutenk

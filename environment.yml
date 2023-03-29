@@ -11,6 +11,6 @@ dependencies:
   - ipykernel
   - dadi
   - multiprocess
+  - stdpopsim
   - pip:
-    # - git+https://github.com/lntran26/stdpopsim.git@modified-dfe
     - scikit-allel

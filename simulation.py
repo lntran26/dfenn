@@ -1,69 +1,59 @@
-import os, io, subprocess
-import dadi
-from matplotlib import pyplot as plt
+import stdpopsim
+import tskit
+import pickle
 import multiprocess as mp
 
-def runSLiM(args):
-    mean, shape, seed = args
-    command = f"slim -d MEAN={mean} -d SHAPE={shape} -d SEED={seed} base.slim"
+def simulate_ts(args):
 
-    # Use subprocess to capture output without intermediate file on disk
-    p = subprocess.check_output(command, shell=True, text=True)
-    with open(f"simulations/{str(args)}.txt", "w") as text_file:
-        print(p, file=text_file)
+    gamma_mean, gamma_shape, seed = args
 
-    # process SLiM output to plot ASF
-    try:
-        pop_outputs = p.split('#OUT')[1:]
-        # Read parts of string output as if they were a file
-        fids = [io.StringIO(_) for _ in pop_outputs]
+    # species, demography, contig, sample settings
+    species = stdpopsim.get_species("HomSap")
+    # generic demography
+    model = stdpopsim.PiecewiseConstantSize(species.population_size)
+    # select specific chromosome and region
+    contig = species.get_contig("chr20", left=10e6, right=20e6)
+    # contig = species.get_contig(length=5e6)
+    # sampling 5 diploid genomes
+    samples = {"pop_0": 5}
 
-        dd_syn,ns = dadi.Misc.dd_from_SLiM_files(fids, mut_types=['m1'])
-        # Return the beginning of the "files" to process the nonsynonymous
-        # mutations
-        [_.seek(0) for _ in fids]
-        dd_non,ns = dadi.Misc.dd_from_SLiM_files(fids, mut_types=['m2'])
+    # choose engine
+    engine = stdpopsim.get_engine("slim")
 
-        popids = range(len(ns))
-        fs_syn = dadi.Spectrum.from_data_dict(dd_syn, popids, ns)
-        fs_non = dadi.Spectrum.from_data_dict(dd_non, popids, ns)
+    # DFE setting
+    dfe = species.get_dfe("Gamma_K17")
 
-        return fs_syn, fs_non
-    except:
-        # If we failed in parsing, print the SLiM output, for debugging.
-        print('Failed to process SLiM output.')
-        print(p[:int(1e3)])
+    # change dfe distribution for negative mutation types
+    dfe.mutation_types[1].distribution_args = [gamma_mean, gamma_shape]
 
+    # apply DFE to exons only
+    exons = species.get_annotations("ensembl_havana_104_exons")
+    exon_intervals = exons.get_chromosome_annotations("chr20")
+    contig.add_dfe(intervals=exon_intervals, DFE=dfe)
 
+    # simulate tree sequence
+    ts = engine.simulate(
+        model,
+        contig,
+        samples,
+        seed=seed,
+        slim_scaling_factor=1,
+        slim_burn_in=10,
+    )
+    # save output tree sequence
+    ts.dump(f"simulations/{str(args)}.trees")
+
+    return ts
+
+# TO-DO: function to generate gamma values
 arg_list = []
-for seed in [123,231,312]:
-    for gamma in [(-0.0131483, 0.186), (-0.05, 0.01), (-0.005, 0.5)]:
+for seed in [1, 2, 3]:
+    for gamma in [(-0.0131483, 0.186), (-0.05, 0.186), (-0.005, 0.186),
+                  (-0.0131483, 0.01), (-0.0131483, 0.5)]:
         param = gamma[0], gamma[1], seed
         arg_list.append(param)
 
+# parallelize simulations
 with mp.Pool() as pool:
-    fs_list = pool.map(runSLiM, arg_list)
-
-def plot_fs(fs_syn, fs_non, plot_title, plot_dir, file_name):
-    plt.rc('xtick', labelsize=15)
-    plt.rc('ytick', labelsize=15)
-    fig, ax = plt.subplots()
-    x = range(len(fs_syn))
-    ax.plot(x, fs_syn, label=f"Syn ({int(fs_syn.sum())} SNPs)", alpha=0.6, zorder=3, marker='o', color="blue")
-    ax.plot(x, fs_non, label=f"Non-syn ({int(fs_non.sum())} SNPs)", alpha=0.6, marker='s',color="red", zorder=2.5)
-    ax.legend(loc = 'upper right', fontsize=18)
-    ax=plt.xticks(ticks=[1,3,5,7,9])
-    plt.tick_params('both', length=7, which='major')
-    plt.xlabel("Frequency", fontsize=15, labelpad=10)
-    plt.ylabel("Count", fontsize=15, labelpad=10)
-    plt.title(plot_title, fontsize=15)
-    fig.tight_layout()
-    plt.savefig(f"{plot_dir}/{file_name}", transparent=True, dpi=150)
-
-for i, (fs_pair, arg) in enumerate(zip(fs_list, arg_list)):
-    fs_syn = fs_pair[0]
-    fs_non = fs_pair[1]
-    title = str(arg)
-    directory = "plots"
-    fname = f"fs_{i+1}.png"
-    plot_fs(fs_syn, fs_non, title, directory, fname)
+    ts_list = pool.map(simulate_ts, arg_list)
+pickle.dump(ts_list, open('simulations/ts_list.pickle', 'wb'))
