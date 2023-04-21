@@ -12,6 +12,6 @@ dependencies:
   - dadi
   - multiprocess
   - stdpopsim
+  - dadi-cli
   - pip:
     - scikit-allel
-    - git+https://github.com/xin-huang/dadi-cli
