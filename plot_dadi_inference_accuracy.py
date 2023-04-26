@@ -87,7 +87,10 @@ def plot_accuracy_single(x, y, size=(8, 2, 20), x_label="Simulated",
 # bestfits_list = sorted(glob.glob("inference/all_two_epoch_3/*DFE.bestfits*"))
 # bestfits_list = sorted(glob.glob("inference/all_snm_equil/*DFE.bestfits*"))
 # bestfits_list = sorted(glob.glob("inference/all_snm_equil_2/*DFE.bestfits*"))
-bestfits_list = sorted(glob.glob("inference/all_snm_equil_3/*DFE.bestfits*"))
+# bestfits_list = sorted(glob.glob("inference/all_snm_equil_3/*DFE.bestfits*"))
+# bestfits_list = sorted(glob.glob("inference/all_two_epoch_small_chunks_100/*DFE.bestfits*"))
+# bestfits_list = sorted(glob.glob("inference/all_two_epoch_small_chunks_1000/*DFE.bestfits*"))
+bestfits_list = sorted(glob.glob("inference/all_two_epoch_reprocessed/*DFE.bestfits*"))
 
 dadi_pred = []
 
@@ -113,6 +116,8 @@ for fname in bestfits_list:
 
 not_finished_fs_id = []
 not_converged_fs_id = []
+
+# for i in range(10):
 for i in range(50):
     if i not in finished_fs_id:
         not_finished_fs_id.append(i)
@@ -123,6 +128,7 @@ print(f'FS without bestfits file: {not_finished_fs_id}')
 print(f'FS without converged results:{not_converged_fs_id}')
 
 pred = np.array(dadi_pred)
+# pred = np.array(dadi_pred[:10])
 pred_shape = pred[:, 0]
 pred_scale = pred[:, 1]
 pred_theta = pred[:, 2]
@@ -138,6 +144,7 @@ true_scale = []
 true_mean = []
 
 for i, param in enumerate(list(test_data.keys())):
+# for i, param in enumerate(list(test_data.keys())[:10]):
     if i not in not_finished_fs_id: # exclude data set that dadi doesn't have results for
         true_shape.append(param[1])
         true_scale.append(12378*abs(param[0])/param[1])
@@ -205,7 +212,11 @@ plot_accuracy_single(list(true_scale), list(pred_scale), size=[6, 2, 20], rho=rh
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_3/dadi_scale.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_snm_equil/dadi_scale_new.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_snm_equil_2/dadi_scale.png", transparent=True, dpi=150)
-plt.savefig(f"plots/dadi_dfe_accuracy_snm_equil_3/dadi_scale.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_snm_equil_3/dadi_scale.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_scale.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_1000/dadi_scale.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_scale_10.png", transparent=True, dpi=150)
+plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_reprocessed/dadi_scale.png", transparent=True, dpi=150)
 plt.clf()
 
 plot_accuracy_single(list(true_mean), list(pred_mean), size=[6, 2, 20], rho=rho_mean,
@@ -218,7 +229,11 @@ plot_accuracy_single(list(true_mean), list(pred_mean), size=[6, 2, 20], rho=rho_
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_3/dadi_mean.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_snm_equil/dadi_mean_new.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_snm_equil_2/dadi_mean.png", transparent=True, dpi=150)
-plt.savefig(f"plots/dadi_dfe_accuracy_snm_equil_3/dadi_mean.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_snm_equil_3/dadi_mean.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_mean.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_1000/dadi_mean.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_mean_10.png", transparent=True, dpi=150)
+plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_reprocessed/dadi_mean.png", transparent=True, dpi=150)
 plt.clf()
 
 plot_accuracy_single(list(true_shape), list(pred_shape), size=[6, 2, 20], rho=rho_shape,
@@ -229,6 +244,9 @@ plot_accuracy_single(list(true_shape), list(pred_shape), size=[6, 2, 20], rho=rh
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_3/dadi_shape.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_snm_equil/dadi_shape_new.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_snm_equil_2/dadi_shape.png", transparent=True, dpi=150)
-plt.savefig(f"plots/dadi_dfe_accuracy_snm_equil_3/dadi_shape.png", transparent=True, dpi=150)
-
+# plt.savefig(f"plots/dadi_dfe_accuracy_snm_equil_3/dadi_shape.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_shape.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_1000/dadi_shape.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_shape_10.png", transparent=True, dpi=150)
+plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_reprocessed/dadi_shape.png", transparent=True, dpi=150)
     
