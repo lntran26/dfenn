@@ -1,0 +1,20 @@
+
+source ~/.bashrc && conda activate dfe-cnn
+
+# plot some test FS inference results
+
+for i in 1 20 30;
+do
+    printf -v j "%03d" $i
+    
+    # plot data FS
+    dadi-cli Plot --fs data/dadi_test/all/fs_${i}_syn --output plots/dadi_dfe_accuracy/fs_${i}_syn.png --model snm_1d
+    dadi-cli Plot --fs data/dadi_test/all/fs_${i}_nonsyn --output plots/dadi_dfe_accuracy/fs_${i}_nonsyn.png --model snm_1d
+    
+    # plot compare frequency spectra between a demographic model with selection and data
+    dadi-cli Plot --fs data/dadi_test/all/fs_${i}_nonsyn --model equil --pdf1d gamma \
+    --dfe-popt inference/all/fs_${j}.gamma.InferDFE.bestfits \
+    --cache1d inference/all/fs_${i}.spectra.bpkl \
+    --output plots/dadi_dfe_accuracy/fs_${i}_compare.png --nomisid
+    
+done
