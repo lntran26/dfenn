@@ -1,3 +1,18 @@
+#!/usr/bin/env python
+
+#SBATCH --job-name=dfe_sim_Africa_1T12_2e6_contig
+#SBATCH --output=outfiles/%x-%j.out
+#SBATCH --error=outfiles/%x-%j.err
+#SBATCH --account=rgutenk
+#SBATCH --partition=high_priority
+#SBATCH --qos=user_qos_rgutenk
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=lnt@arizona.edu
+#SBATCH --nodes=1
+#SBATCH --ntasks=50
+#SBATCH --mem=250gb
+#SBATCH --time=48:00:00
+
 import stdpopsim
 import tskit
 import pickle
@@ -11,13 +26,13 @@ def simulate_ts(args):
     # generic demography
     # model = stdpopsim.PiecewiseConstantSize(species.population_size)
     # specify demography
-    model = species.get_demographic_model("Africa_1B08")
+    model = species.get_demographic_model("Africa_1T12")
     # select specific chromosome and region
     # contig = species.get_contig("chr20", left=10e6, right=11e6)
     contig = species.get_contig(length=2e6)
     # sampling 10 diploid genomes
     # samples = {"pop_0": 10}
-    samples = {"African_Americans": 10}
+    samples = {"AFR": 10}
     # choose engine
     engine = stdpopsim.get_engine("slim")
     # DFE setting
@@ -68,9 +83,9 @@ with mp.Pool() as pool:
     test = pool.map(simulate_ts, arg_list_test)
 test_dict = dict(zip(arg_list_test, test))
 # pickle.dump(test_dict, open('data/test_data.pickle', 'wb'))
-pickle.dump(test_dict, open('data/test_data_1B08.pickle', 'wb'))
+pickle.dump(test_dict, open('data/test_data_1T12.pickle', 'wb'))
     
 with mp.Pool() as pool:
     train = pool.map(simulate_ts, arg_list_train)
 train_dict = dict(zip(arg_list_train, train))
-pickle.dump(train_dict, open('data/train_data_1B08.pickle', 'wb'))
+pickle.dump(train_dict, open('data/train_data_1T12.pickle', 'wb'))

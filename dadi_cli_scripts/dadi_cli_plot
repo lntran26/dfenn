@@ -3,18 +3,48 @@ source ~/.bashrc && conda activate dfe-cnn
 
 # plot some test FS inference results
 
-for i in 1 20 30;
+# for i in 1 20 30;
+for i in 14 16 28;
+# for i in $(seq 0 9);
 do
     printf -v j "%03d" $i
     
     # plot data FS
-    dadi-cli Plot --fs data/dadi_test/all/fs_${i}_syn --output plots/dadi_dfe_accuracy/fs_${i}_syn.png --model snm_1d
-    dadi-cli Plot --fs data/dadi_test/all/fs_${i}_nonsyn --output plots/dadi_dfe_accuracy/fs_${i}_nonsyn.png --model snm_1d
+    # dadi-cli Plot --fs data/dadi_test/all/fs_${i}_syn --output plots/dadi_dfe_accuracy/fs_${i}_syn.png --model snm_1d
+    # dadi-cli Plot --fs data/dadi_test/all/fs_${i}_nonsyn --output plots/dadi_dfe_accuracy/fs_${i}_nonsyn.png --model snm_1d
+    
+    # dadi-cli Plot --fs data/dadi_test/all/fs_${i}_syn --output plots/dadi_cli_plot/fs_${i}_syn_all.png
+    # dadi-cli Plot --fs data/dadi_test/all/fs_${i}_nonsyn --output plots/dadi_cli_plot/fs_${i}_nonsyn_all.png
+    
+    # dadi-cli Plot --fs data/dadi_test/all_reprocessed/fs_${i}_syn --output plots/dadi_cli_plot/fs_${i}_syn_all_reprocessed.png
+    # dadi-cli Plot --fs data/dadi_test/all_reprocessed/fs_${i}_nonsyn --output plots/dadi_cli_plot/fs_${i}_nonsyn_all_reprocessed.png
     
     # plot compare frequency spectra between a demographic model with selection and data
-    dadi-cli Plot --fs data/dadi_test/all/fs_${i}_nonsyn --model equil --pdf1d gamma \
-    --dfe-popt inference/all/fs_${j}.gamma.InferDFE.bestfits \
-    --cache1d inference/all/fs_${i}.spectra.bpkl \
-    --output plots/dadi_dfe_accuracy/fs_${i}_compare.png --nomisid
+    # dadi-cli Plot --fs data/dadi_test/all/fs_${i}_nonsyn --model equil --pdf1d gamma \
+    # --dfe-popt inference/all/fs_${j}.gamma.InferDFE.bestfits \
+    # --cache1d inference/all/fs_${i}.spectra.bpkl \
+    # --output plots/dadi_dfe_accuracy/fs_${i}_compare.png --nomisid
+    
+    # dadi-cli Plot --fs data/dadi_test/all/fs_${i}_nonsyn --model two_epoch --pdf1d gamma \
+    # --dfe-popt inference/all_two_epoch_3/fs_${j}.gamma.InferDFE.bestfits \
+    # --cache1d inference/all_two_epoch_3/fs_${j}.spectra.bpkl \
+    # --output plots/dadi_cli_plot/fs_${i}_compare_all.png --nomisid
+    
+    # dadi-cli Plot --fs data/dadi_test/all_reprocessed/fs_${i}_nonsyn --model two_epoch --pdf1d gamma \
+    # --dfe-popt inference/all_two_epoch_reprocessed/fs_${j}.gamma.InferDFE.bestfits \
+    # --cache1d inference/all_two_epoch_reprocessed/fs_${j}.spectra.bpkl \
+    # --output plots/dadi_cli_plot/fs_${i}_compare_all_reprocessed.png --nomisid
+    
+
+    dadi-cli Plot --fs data/dadi_test/small_chunks_100/fs_${i}_nonsyn --model two_epoch --pdf1d gamma \
+    --dfe-popt inference/all_two_epoch_small_chunks_100/fs_${j}.gamma.InferDFE.bestfits \
+    --cache1d inference/all_two_epoch_small_chunks_100/fs_${j}.spectra.bpkl \
+    --output plots/dadi_cli_plot/fs_${i}_compare_all_two_epoch_small_chunks_100.png --nomisid
+    
+    # dadi-cli Plot --fs data/dadi_test/small_chunks_1000/fs_${i}_nonsyn --model two_epoch --pdf1d gamma \
+    # --dfe-popt inference/all_two_epoch_small_chunks_1000/fs_${j}.gamma.InferDFE.bestfits \
+    # --cache1d inference/all_two_epoch_small_chunks_1000/fs_${j}.spectra.bpkl \
+    # --output plots/dadi_cli_plot/fs_${i}_compare_all_two_epoch_small_chunks_1000.png --nomisid
+    
     
 done

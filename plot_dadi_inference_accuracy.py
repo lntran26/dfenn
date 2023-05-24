@@ -90,7 +90,9 @@ def plot_accuracy_single(x, y, size=(8, 2, 20), x_label="Simulated",
 # bestfits_list = sorted(glob.glob("inference/all_snm_equil_3/*DFE.bestfits*"))
 # bestfits_list = sorted(glob.glob("inference/all_two_epoch_small_chunks_100/*DFE.bestfits*"))
 # bestfits_list = sorted(glob.glob("inference/all_two_epoch_small_chunks_1000/*DFE.bestfits*"))
-bestfits_list = sorted(glob.glob("inference/all_two_epoch_reprocessed/*DFE.bestfits*"))
+# bestfits_list = sorted(glob.glob("inference/all_two_epoch_reprocessed/*DFE.bestfits*"))
+# bestfits_list = sorted(glob.glob("inference/all_two_epoch_1B08/*DFE.bestfits*"))
+bestfits_list = sorted(glob.glob("inference/all_three_epoch_1T12/*DFE.bestfits*"))
 
 dadi_pred = []
 
@@ -138,7 +140,9 @@ pred_mean = pred_scale * pred_shape / (pred_theta / (0.08 * (2.31/(1 + 2.31))))
 # print(pred_mean)
 
 # load true
-test_data = pickle.load(open('data/test_data.pickle', 'rb')) # scale in log 10
+# test_data = pickle.load(open('data/test_data.pickle', 'rb')) # scale in log 10
+# test_data = pickle.load(open('data/test_data_1B08.pickle', 'rb')) # scale in log 10
+test_data = pickle.load(open('data/test_data_1T12.pickle', 'rb'))
 true_shape = []
 true_scale = []
 true_mean = []
@@ -216,7 +220,9 @@ plot_accuracy_single(list(true_scale), list(pred_scale), size=[6, 2, 20], rho=rh
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_scale.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_1000/dadi_scale.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_scale_10.png", transparent=True, dpi=150)
-plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_reprocessed/dadi_scale.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_reprocessed/dadi_scale.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08/dadi_scale.png", transparent=True, dpi=150)
+plt.savefig(f"plots/dadi_dfe_accuracy_three_epoch_1T12/dadi_scale.png", transparent=True, dpi=150)
 plt.clf()
 
 plot_accuracy_single(list(true_mean), list(pred_mean), size=[6, 2, 20], rho=rho_mean,
@@ -233,7 +239,9 @@ plot_accuracy_single(list(true_mean), list(pred_mean), size=[6, 2, 20], rho=rho_
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_mean.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_1000/dadi_mean.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_mean_10.png", transparent=True, dpi=150)
-plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_reprocessed/dadi_mean.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_reprocessed/dadi_mean.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08/dadi_mean.png", transparent=True, dpi=150)
+plt.savefig(f"plots/dadi_dfe_accuracy_three_epoch_1T12/dadi_mean.png", transparent=True, dpi=150)
 plt.clf()
 
 plot_accuracy_single(list(true_shape), list(pred_shape), size=[6, 2, 20], rho=rho_shape,
@@ -248,5 +256,8 @@ plot_accuracy_single(list(true_shape), list(pred_shape), size=[6, 2, 20], rho=rh
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_shape.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_1000/dadi_shape.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_shape_10.png", transparent=True, dpi=150)
-plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_reprocessed/dadi_shape.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_reprocessed/dadi_shape.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08/dadi_shape.png", transparent=True, dpi=150)
+plt.savefig(f"plots/dadi_dfe_accuracy_three_epoch_1T12/dadi_shape.png", transparent=True, dpi=150)
+
     

@@ -77,8 +77,9 @@ def ts_to_two_dadi_fs(exon_ts, max_snps: int):
 
 
 # read in pickle dictionary test data file
-test_data = pickle.load(open('data/test_data.pickle', 'rb'))  # 50 set
-
+# test_data = pickle.load(open('data/test_data.pickle', 'rb'))  # 50 set
+# test_data = pickle.load(open('data/test_data_1B08.pickle', 'rb')) 
+test_data = pickle.load(open('data/test_data_1T12.pickle', 'rb'))
 
 for i, ts in enumerate(test_data.values()):
     for max_snps_count in ['all']:
@@ -87,10 +88,22 @@ for i, ts in enumerate(test_data.values()):
 
         neu_fs, non_neu_fs = ts_to_two_dadi_fs(ts, max_snps)
 
-        if not os.path.exists(f'data/dadi_test/{max_snps_count}_reprocessed'):
-            os.makedirs(f'data/dadi_test/{max_snps_count}_reprocessed')
+        # if not os.path.exists(f'data/dadi_test/{max_snps_count}_reprocessed'):
+        #     os.makedirs(f'data/dadi_test/{max_snps_count}_reprocessed')
+        # if not os.path.exists(f'data/dadi_test/two_epoch/{max_snps_count}'):
+        #     os.makedirs(f'data/dadi_test/two_epoch/{max_snps_count}')
+        if not os.path.exists(f'data/dadi_test/three_epoch/{max_snps_count}'):
+            os.makedirs(f'data/dadi_test/three_epoch/{max_snps_count}')
 
         # save individual SFS to file, different dir for different SNP size
-        neu_fs.to_file(f'data/dadi_test/{max_snps_count}_reprocessed/fs_{i}_syn')
-        non_neu_fs.to_file(f'data/dadi_test/{max_snps_count}_reprocessed/fs_{i}_nonsyn')
+        # neu_fs.to_file(f'data/dadi_test/{max_snps_count}_reprocessed/fs_{i}_syn')
+        # non_neu_fs.to_file(f'data/dadi_test/{max_snps_count}_reprocessed/fs_{i}_nonsyn')
+        # neu_fs.to_file(f'data/dadi_test/two_epoch/{max_snps_count}/fs_{i}_syn')
+        # non_neu_fs.to_file(f'data/dadi_test/two_epoch/{max_snps_count}/fs_{i}_nonsyn')
+        neu_fs.to_file(f'data/dadi_test/three_epoch/{max_snps_count}/fs_{i}_syn')
+        non_neu_fs.to_file(f'data/dadi_test/three_epoch/{max_snps_count}/fs_{i}_nonsyn')
+        
+        
+        
+        
         
