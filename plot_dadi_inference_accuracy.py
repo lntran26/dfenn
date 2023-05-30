@@ -2,10 +2,16 @@ import pickle
 import glob
 import numpy as np
 from matplotlib import pyplot as plt
+import matplotlib.ticker as mticker
 from scipy import stats
+from scipy.stats import gamma
 
 def root_mean_squared_error(system: np.ndarray, human: np.ndarray):
     return ((system - human) ** 2).mean() ** 0.5
+
+def get_proportion_from_gamma(shape, scale, N, bin_from=0, bin_to=np.inf):
+    dist = gamma(shape, scale=scale/(2*N))
+    return dist.cdf(bin_to) - dist.cdf(bin_from)
 
 def plot_accuracy_single(x, y, size=(8, 2, 20), x_label="Simulated",
                          y_label="Inferred", log=False, r2=None,
@@ -92,7 +98,10 @@ def plot_accuracy_single(x, y, size=(8, 2, 20), x_label="Simulated",
 # bestfits_list = sorted(glob.glob("inference/all_two_epoch_small_chunks_1000/*DFE.bestfits*"))
 # bestfits_list = sorted(glob.glob("inference/all_two_epoch_reprocessed/*DFE.bestfits*"))
 # bestfits_list = sorted(glob.glob("inference/all_two_epoch_1B08/*DFE.bestfits*"))
-bestfits_list = sorted(glob.glob("inference/all_three_epoch_1T12/*DFE.bestfits*"))
+# bestfits_list = sorted(glob.glob("inference/all_three_epoch_1T12/*DFE.bestfits*"))
+bestfits_list = sorted(glob.glob("inference/all_two_epoch_1B08_varied_1B08_scale_2/*DFE.bestfits*"))
+# bestfits_list = sorted(glob.glob("inference/all_two_epoch_1B08_varied_1B08_scale_10/*DFE.bestfits*"))
+# bestfits_list = sorted(glob.glob("inference/all_two_epoch_1B08_varied_no_scale_wider_param_range/*DFE.bestfits*"))
 
 dadi_pred = []
 
@@ -135,14 +144,23 @@ pred_shape = pred[:, 0]
 pred_scale = pred[:, 1]
 pred_theta = pred[:, 2]
 pred_mean = pred_scale * pred_shape / (pred_theta / (0.08 * (2.31/(1 + 2.31))))
-# print(pred_shape)
-# print(pred_scale)
-# print(pred_mean)
+
+pred_all_proportions = []
+for proportion in [(0, 1e-5), (1e-5, 1e-4), (1e-4, 1e-3),
+                   (1e-3, 1e-2), (1e-2, np.inf)]:
+    pred_proportion = [get_proportion_from_gamma(shape, scale, N=7778,
+                                                 bin_from=proportion[0],
+                                                 bin_to=proportion[1]) for scale, shape in zip(pred_scale, pred_shape)]
+    pred_all_proportions.append(pred_proportion)
+
 
 # load true
 # test_data = pickle.load(open('data/test_data.pickle', 'rb')) # scale in log 10
 # test_data = pickle.load(open('data/test_data_1B08.pickle', 'rb')) # scale in log 10
-test_data = pickle.load(open('data/test_data_1T12.pickle', 'rb'))
+# test_data = pickle.load(open('data/test_data_1T12.pickle', 'rb'))
+test_data = pickle.load(open('data/test_data_1B08_varied_scale_2.pickle', 'rb'))
+# test_data = pickle.load(open('data/test_data_1B08_varied_scale_10.pickle', 'rb'))
+# test_data = pickle.load(open('data/test_data_1B08_varied.pickle', 'rb'))
 true_shape = []
 true_scale = []
 true_mean = []
@@ -153,9 +171,14 @@ for i, param in enumerate(list(test_data.keys())):
         true_shape.append(param[1])
         true_scale.append(12378*abs(param[0])/param[1])
         true_mean.append(param[0])
-# print(np.array(true_shape))
-# print(np.array(true_scale))
-# print(np.array(true_mean))
+        
+true_all_proportions = []
+for proportion in [(0, 1e-5), (1e-5, 1e-4), (1e-4, 1e-3),
+                   (1e-3, 1e-2), (1e-2, np.inf)]:
+    true_proportion = [get_proportion_from_gamma(shape, scale, N=7778,
+                                                 bin_from=proportion[0],
+                                                 bin_to=proportion[1]) for scale, shape in zip(true_scale, true_shape)]
+    true_all_proportions.append(true_proportion)
 
 # for fname in bestfits_list:
 #     idx = int(fname.split('_')[1].split('.')[0])
@@ -199,12 +222,20 @@ for i, param in enumerate(list(test_data.keys())):
 # # print(np.array(true_mean))
 
 
-rmse_scale = root_mean_squared_error(pred_scale, true_scale)
+rmse_scale = root_mean_squared_error(np.log10(pred_scale), np.log10(true_scale))
 rmse_shape = root_mean_squared_error(pred_shape, true_shape)
 rmse_mean = root_mean_squared_error(pred_mean, true_mean)
+all_rmse_proportions = [root_mean_squared_error(
+    np.array(pred_proportion), np.array(true_proportion))
+    for pred_proportion, true_proportion in
+    zip(pred_all_proportions, true_all_proportions)]
+
 rho_scale = stats.spearmanr(true_scale, pred_scale)[0]
 rho_shape = stats.spearmanr(true_shape, pred_shape)[0]
 rho_mean = stats.spearmanr(true_mean, pred_mean)[0]
+all_rho_proportions = [stats.spearmanr(pred_proportion, true_proportion)[0]
+                       for true_proportion, pred_proportion in
+                       zip(true_all_proportions, pred_all_proportions)]
 
 plot_accuracy_single(list(true_scale), list(pred_scale), size=[6, 2, 20], rho=rho_scale,
                      rmse=rmse_scale, log=True,
@@ -222,7 +253,10 @@ plot_accuracy_single(list(true_scale), list(pred_scale), size=[6, 2, 20], rho=rh
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_scale_10.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_reprocessed/dadi_scale.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08/dadi_scale.png", transparent=True, dpi=150)
-plt.savefig(f"plots/dadi_dfe_accuracy_three_epoch_1T12/dadi_scale.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_three_epoch_1T12/dadi_scale.png", transparent=True, dpi=150)
+plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08_varied_scale_2/dadi_scale.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08_varied_scale_10/dadi_scale.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08_varied/dadi_scale.png", transparent=True, dpi=150)
 plt.clf()
 
 plot_accuracy_single(list(true_mean), list(pred_mean), size=[6, 2, 20], rho=rho_mean,
@@ -241,7 +275,10 @@ plot_accuracy_single(list(true_mean), list(pred_mean), size=[6, 2, 20], rho=rho_
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_mean_10.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_reprocessed/dadi_mean.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08/dadi_mean.png", transparent=True, dpi=150)
-plt.savefig(f"plots/dadi_dfe_accuracy_three_epoch_1T12/dadi_mean.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_three_epoch_1T12/dadi_mean.png", transparent=True, dpi=150)
+plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08_varied_scale_2/dadi_mean.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08_varied_scale_10/dadi_mean.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08_varied/dadi_mean.png", transparent=True, dpi=150)
 plt.clf()
 
 plot_accuracy_single(list(true_shape), list(pred_shape), size=[6, 2, 20], rho=rho_shape,
@@ -258,6 +295,31 @@ plot_accuracy_single(list(true_shape), list(pred_shape), size=[6, 2, 20], rho=rh
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_small_chunks_100/dadi_shape_10.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_reprocessed/dadi_shape.png", transparent=True, dpi=150)
 # plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08/dadi_shape.png", transparent=True, dpi=150)
-plt.savefig(f"plots/dadi_dfe_accuracy_three_epoch_1T12/dadi_shape.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_three_epoch_1T12/dadi_shape.png", transparent=True, dpi=150)
+plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08_varied_scale_2/dadi_shape.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08_varied_scale_10/dadi_shape.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/dadi_dfe_accuracy_two_epoch_1B08_varied/dadi_shape.png", transparent=True, dpi=150)
 
+
+f = mticker.ScalarFormatter(useMathText=True)
+for i, proportion in enumerate([(0, 1e-5), (1e-5, 1e-4), (1e-4, 1e-3),
+                                (1e-3, 1e-2), (1e-2, np.inf)]):
+    plt.clf()
+    p_from = "${}$".format(f.format_data(proportion[0])) if proportion[0] not in (
+        0, np.inf) else proportion[0]
+    p_to = "${}$".format(f.format_data(proportion[1])) if proportion[1] not in (
+        0, np.inf) else proportion[1]
+    plot_accuracy_single(true_all_proportions[i],
+                         pred_all_proportions[i],
+                         size=[6, 2, 20], rho=all_rho_proportions[i],
+                         rmse=all_rmse_proportions[i],
+                         title=f"{p_from}≤|s|≤{p_to}"
+                         )
+    plt.savefig(
+        f"plots/dadi_dfe_accuracy_two_epoch_1B08_varied_scale_2/dadi_mean_{proportion[0]:.0e}_to_{proportion[1]:.0e}.png", 
+        transparent=True, dpi=150)
+    # plt.savefig(
+    #     f"plots/dadi_dfe_accuracy_two_epoch_1B08_varied/dadi_mean_{proportion[0]:.0e}_to_{proportion[1]:.0e}.png", 
+    #     transparent=True, dpi=150)
+        
     

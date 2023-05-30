@@ -1,0 +1,63 @@
+#!/bin/bash
+###SBATCH --job-name=dadi_dfe_inference_two_epoch_1B08_varied_scale_2
+###SBATCH --job-name=dadi_dfe_inference_two_epoch_1B08_varied_scale_10
+#SBATCH --job-name=dadi_dfe_inference_two_epoch_1B08_varied
+###SBATCH --output=outfiles/dadi_two_epoch_1B08_varied_scale_2/%x-%A_%a.out
+###SBATCH --output=outfiles/dadi_two_epoch_1B08_varied_scale_10/%x-%A_%a.out
+#SBATCH --output=outfiles/dadi_two_epoch_1B08_varied/%x-%A_%a.out
+###SBATCH --error=outfiles/dadi_two_epoch_1B08_varied_scale_2/%x-%A_%a.err
+###SBATCH --error=outfiles/dadi_two_epoch_1B08_varied_scale_10/%x-%A_%a.err
+#SBATCH --error=outfiles/dadi_two_epoch_1B08_varied/%x-%A_%a.err
+#SBATCH --account=rgutenk
+#SBATCH --partition=high_priority
+#SBATCH --qos=user_qos_rgutenk
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=lnt@arizona.edu
+#SBATCH --nodes=1
+#SBATCH --ntasks=10
+#SBATCH --mem=50gb
+#SBATCH --time=10:00:00
+#SBATCH --array=0-49
+
+source ~/.bashrc && conda activate dfe-cnn
+i=$SLURM_ARRAY_TASK_ID
+printf -v j "%03d" $i # make j as i with 3 index
+
+# IN_DIR="data/dadi_test/two_epoch_varied_1B08/all_scale_2"
+# OUT_DIR="inference/all_two_epoch_1B08_varied_1B08_scale_2"
+# IN_DIR="data/dadi_test/two_epoch_varied_1B08/all_scale_10"
+# OUT_DIR="inference/all_two_epoch_1B08_varied_1B08_scale_10"
+IN_DIR="data/dadi_test/two_epoch_varied_1B08/all_no_scale_wider_param_range"
+OUT_DIR="inference/all_two_epoch_1B08_varied_no_scale_wider_param_range"
+mkdir -p ${OUT_DIR}
+
+
+dm_model="two_epoch"
+dm_p0='10 0.5'
+dm_lbounds='10e-3 10e-3'
+dm_ubounds='100 2'
+grids="44 68 80"
+
+model_sel="two_epoch_sel"
+dfe_p0='0.5 1000'
+dfe_lbounds='1e-4 1e-4'
+dfe_ubounds='1 50000'
+grids_cache="200 250 300"
+
+dadi-cli InferDM --fs ${IN_DIR}/fs_${i}_syn --model ${dm_model} --grids ${grids} \
+        --output-prefix ${OUT_DIR}/fs_${j} --p0 ${dm_p0} \
+        --ubounds ${dm_ubounds} --lbounds ${dm_lbounds} \
+        --cpus 10 --force-convergence --nomisid
+        
+dadi-cli GenerateCache --model ${model_sel} \
+        --demo-popt ${OUT_DIR}/fs_${j}.InferDM.bestfits \
+        --output ${OUT_DIR}/fs_${j}.spectra.bpkl \
+        --grids ${grids_cache} --sample-sizes 20 --cpus 10
+    
+dadi-cli InferDFE --fs ${IN_DIR}/fs_${i}_nonsyn \
+        --cache1d ${OUT_DIR}/fs_${j}.spectra.bpkl \
+        --demo-popt ${OUT_DIR}/fs_${j}.InferDM.bestfits \
+        --output-prefix ${OUT_DIR}/fs_${j}.gamma \
+        --pdf1d gamma --p0 ${dfe_p0} \
+        --ubounds ${dfe_ubounds} --lbounds ${dfe_lbounds} \
+        --ratio 2.31 --force-convergence --nomisid --cpus 10
