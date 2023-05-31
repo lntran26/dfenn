@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#SBATCH --job-name=dfe_sim_varied_demog_2e6_contig_1B08_scale_2
+#SBATCH --job-name=dfe_sim_varied_demog_2e6_contig_1B08_full_range_scale_10
 #SBATCH --output=outfiles/%x-%j.out
 #SBATCH --error=outfiles/%x-%j.err
 #SBATCH --account=rgutenk
@@ -52,7 +52,7 @@ def simulate_ts(args):
         contig,
         samples,
         seed=seed,
-        slim_scaling_factor=2,
+        slim_scaling_factor=10,
         slim_burn_in=10)
     # save output tree sequence
     # ts.dump(f"simulations/{str(args)}.trees")
@@ -66,8 +66,8 @@ def get_dfe_params(n_gammas, n_reps, seed=None):
     for _ in range(n_gammas):
         gamma_mean = (np.random.random() + 0.1) / 20
         gamma_shape = (np.random.random() + 0.02) / 2
-        T = np.random.random() * 0.99 + 0.01 # not too long past
-        nu = np.random.random() * 3 - 1 # decrease bottleneck size
+        T = np.random.random() * 1.99 + 0.01
+        nu = np.random.random() * 4 - 2
         initial_size = 7778
         time = int(2*initial_size*T)
         present_size = int(initial_size*10**nu)
@@ -82,9 +82,9 @@ arg_list_test = get_dfe_params(50, 1, seed=100)
 with mp.Pool() as pool:
     test = pool.map(simulate_ts, arg_list_test)
 test_dict = dict(zip(arg_list_test, test))
-pickle.dump(test_dict, open('data/test_data_1B08_varied_scale_2.pickle', 'wb'))
+pickle.dump(test_dict, open('data/test_data_1B08_varied_full_range_scale_10.pickle', 'wb'))
     
 with mp.Pool() as pool:
     train = pool.map(simulate_ts, arg_list_train)
 train_dict = dict(zip(arg_list_train, train))
-pickle.dump(train_dict, open('data/train_data_1B08_varied_scale_2.pickle', 'wb'))
+pickle.dump(train_dict, open('data/train_data_1B08_varied_full_range_scale_10.pickle', 'wb'))

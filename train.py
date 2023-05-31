@@ -98,44 +98,53 @@ def root_mean_squared_error(system: np.ndarray, human: np.ndarray):
 
 
 # load data
-max_snps = 300
+max_snps = 200
+# max_snps = 300
 subfix = "scale_shape"
 
-# train_data = pickle.load(open('data/train_data.pickle', 'rb'))
+# train_data = pickle.load(open('data_two_epoch/train_data_1B08.pickle', 'rb'))
 # train_in, train_out = prep_tensor(ts_to_tensor(train_data), max_snps)
+# pickle.dump(train_in, open(f'data_two_epoch/train_in_{max_snps}_{subfix}','wb'))
+# pickle.dump(train_out, open(f'data_two_epoch/train_out_{max_snps}_{subfix}','wb'))
 
-# test_data = pickle.load(open('data/test_data.pickle', 'rb'))
-# test_in, test_out = prep_tensor(ts_to_tensor(test_data), max_snps)
+# train_data = pickle.load(open('data_three_epoch/train_data_1T12.pickle', 'rb'))
+# train_in, train_out = prep_tensor(ts_to_tensor(train_data), max_snps)
+# pickle.dump(train_in, open(f'data_three_epoch/train_in_{max_snps}_{subfix}','wb'))
+# pickle.dump(train_out, open(f'data_three_epoch/train_out_{max_snps}_{subfix}','wb'))
 
-# pickle.dump(train_in, open(f'data/train_in_{max_snps}_{subfix}','wb'))
-# pickle.dump(train_out, open(f'data/train_out_{max_snps}_{subfix}','wb'))
-# pickle.dump(test_in, open(f'data/test_in_{max_snps}_{subfix}','wb'))
-# pickle.dump(test_out, open(f'data/test_out_{max_snps}_{subfix}','wb'))
+# train_in = pickle.load(open(f'data_two_epoch/train_in_{max_snps}_{subfix}','rb'))
+# train_out = pickle.load(open(f'data_two_epoch/train_out_{max_snps}_{subfix}','rb'))
+# test_in = pickle.load(open(f'data_two_epoch/test_in_{max_snps}_{subfix}','rb'))
+# test_out = pickle.load(open(f'data_two_epoch/test_out_{max_snps}_{subfix}','rb'))
 
-train_in = pickle.load(open(f'data/train_in_{max_snps}_{subfix}','rb'))
-train_out = pickle.load(open(f'data/train_out_{max_snps}_{subfix}','rb'))
-test_in = pickle.load(open(f'data/test_in_{max_snps}_{subfix}','rb'))
-test_out = pickle.load(open(f'data/test_out_{max_snps}_{subfix}','rb'))
+# train_in = pickle.load(open(f'data_three_epoch/train_in_{max_snps}_{subfix}','rb'))
+# train_out = pickle.load(open(f'data_three_epoch/train_out_{max_snps}_{subfix}','rb'))
+test_in = pickle.load(open(f'data_three_epoch/test_in_{max_snps}_{subfix}','rb'))
+test_out = pickle.load(open(f'data_three_epoch/test_out_{max_snps}_{subfix}','rb'))
 
-# request a model
-input_shape = train_in.shape[1:]
-n_outputs = 2
-model, kwargs = create_dfe_cnn(input_shape, n_outputs)
+# # request a model
+# input_shape = train_in.shape[1:]
+# n_outputs = 2
+# model, kwargs = create_dfe_cnn(input_shape, n_outputs)
 
-# set training data, epochs and validation data
-kwargs.update(x=train_in, y=train_out, batch_size=10,
-              epochs=20, validation_data=(test_in, test_out))
+# # set training data, epochs and validation data
+# kwargs.update(x=train_in, y=train_out, batch_size=10,
+#               epochs=30, validation_data=(test_in, test_out))
 
-# call fit, including any arguments supplied alongside the model
-callback = callbacks.EarlyStopping(monitor='val_loss', patience=5)
-model.fit(**kwargs, callbacks=[callback])
-# model.fit(**kwargs)
+# # call fit, including any arguments supplied alongside the model
+# callback = callbacks.EarlyStopping(monitor='val_loss', patience=5)
+# model.fit(**kwargs, callbacks=[callback])
+# # model.fit(**kwargs)
 
 
 # save trained model
-pickle.dump(model, open(f'data/trained_model_{max_snps}_{subfix}','wb'))
+# pickle.dump(model, open(f'data_two_epoch/trained_model_{max_snps}_{subfix}','wb'))
+# pickle.dump(model, open(f'data_three_epoch/trained_model_{max_snps}_{subfix}','wb'))
+# pickle.dump(model, open(f'/Users/linhtran/Desktop/two_epoch_1B08_trained_model_{max_snps}','wb'))
+# pickle.dump(model, open(f'/Users/linhtran/Desktop/three_epoch_1T12_trained_model_{max_snps}','wb'))
 
-# model = pickle.load(open("data/trained_model_200","rb"))
+# model = pickle.load(open(f"data_two_epoch/trained_model_{max_snps}_{subfix}","rb"))
+# model = pickle.load(open(f"data_three_epoch/trained_model_{max_snps}_{subfix}","rb"))
 
 # make sure error is low enough
 rmse = root_mean_squared_error(model.predict(test_in), test_out)
@@ -179,7 +188,16 @@ def plot_accuracy_single(x, y, size=(8, 2, 20), x_label="Simulated",
     plt.ylabel(y_label, labelpad=size[2]/2)
 
     # only plot in log scale if log specified for the param
-    if  max(x+y) > 0.4: # shape
+    if log:
+        plt.xscale("log")
+        plt.yscale("log")
+        # axis scales customized to data
+        plt.xlim([min(x+y)*10**-0.5, max(x+y)*10**0.5])
+        plt.ylim([min(x+y)*10**-0.5, max(x+y)*10**0.5])
+        # plt.xticks(ticks=[1e-2, 1e0, 1e2])
+        # plt.yticks(ticks=[1e-2, 1e0, 1e2])
+        plt.minorticks_off()
+    elif  max(x+y) > 0.4: # shape
         plt.xlim([min(x+y)-0.1, max(x+y)+0.1])
         plt.ylim([min(x+y)-0.1, max(x+y)+0.1])
     else:
@@ -208,26 +226,46 @@ def plot_accuracy_single(x, y, size=(8, 2, 20), x_label="Simulated",
     plt.tight_layout()
 
 pred = model.predict(test_in)
-pred_mean = pred[:, 0]
+pred_scale = 10**pred[:, 0]
 pred_shape = pred[:, 1]
-true_mean = test_out[:, 0]
+pred_mean = [(scale * shape)/12378 for scale, shape in zip(pred_scale, pred_shape)]
+
+true_scale = 10**test_out[:, 0]
 true_shape = test_out[:, 1]
+true_mean = [(scale * shape)/12378 for scale, shape in zip(true_scale, true_shape)]
 
-rmse_mean = root_mean_squared_error(pred_mean, true_mean)
+rmse_scale = root_mean_squared_error(pred_scale, true_scale)
 rmse_shape = root_mean_squared_error(pred_shape, true_shape)
-rho_mean = stats.spearmanr(true_mean, pred_mean)[0]
+rmse_mean = root_mean_squared_error(np.array(pred_mean), np.array(true_mean))
+rho_scale = stats.spearmanr(true_scale, pred_scale)[0]
 rho_shape = stats.spearmanr(true_shape, pred_shape)[0]
+rho_mean = stats.spearmanr(true_mean, pred_mean)[0]
 
-plot_accuracy_single(list(true_mean), list(pred_mean), size=[6, 2, 20], rho=rho_mean,
-                     rmse=rmse_mean, 
-                     # title="mean"
-                     title="scale"
-                     )
-
-plt.savefig(f"plots/scale_{max_snps}_{subfix}.png", transparent=True, dpi=150)
+plot_accuracy_single(list(true_scale), list(pred_scale), size=[6, 2, 20],
+                     log=True,
+                     rho=rho_scale,
+                     rmse=rmse_scale, 
+                     title="scale")
+# plt.savefig(f"plots/two_epoch_retrain/scale_{max_snps}_{subfix}.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/three_epoch_retrain/scale_{max_snps}_{subfix}.png", transparent=True, dpi=150)
+# plt.savefig(f"/Users/linhtran/Desktop/two_epoch_1B08_scale_{max_snps}.png", transparent=True, dpi=150)
+plt.savefig(f"/Users/linhtran/Desktop/three_epoch_1T12_scale_{max_snps}.png", transparent=True, dpi=150)
 plt.clf()
 
 plot_accuracy_single(list(true_shape), list(pred_shape), size=[6, 2, 20], rho=rho_shape,
                      rmse=rmse_shape, title="shape")
 
-plt.savefig(f"plots/shape_{max_snps}_{subfix}.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/two_epoch_retrain/shape_{max_snps}_{subfix}.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/three_epoch_retrain/shape_{max_snps}_{subfix}.png", transparent=True, dpi=150)
+# plt.savefig(f"/Users/linhtran/Desktop/two_epoch_1B08_shape_{max_snps}.png", transparent=True, dpi=150)
+plt.savefig(f"/Users/linhtran/Desktop/three_epoch_1T12_shape_{max_snps}.png", transparent=True, dpi=150)
+plt.clf()
+
+plot_accuracy_single(true_mean, pred_mean, size=[6, 2, 20], rho=rho_mean,
+                     rmse=rmse_mean, 
+                     title="mean"
+                     )
+# plt.savefig(f"plots/two_epoch_retrain/mean_{max_snps}_{subfix}.png", transparent=True, dpi=150)
+# plt.savefig(f"plots/three_epoch_retrain/mean_{max_snps}_{subfix}.png", transparent=True, dpi=150)
+# plt.savefig(f"/Users/linhtran/Desktop/two_epoch_1B08_mean_{max_snps}.png", transparent=True, dpi=150)
+plt.savefig(f"/Users/linhtran/Desktop/three_epoch_1T12_mean_{max_snps}.png", transparent=True, dpi=150)
