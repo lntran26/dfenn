@@ -1,23 +1,7 @@
-#!/usr/bin/env python
-
-#SBATCH --job-name=dfe_sim_varied_demog_2e6_contig_1B08_full_range_scale_10
-#SBATCH --output=outfiles/%x-%j.out
-#SBATCH --error=outfiles/%x-%j.err
-#SBATCH --account=rgutenk
-#SBATCH --partition=high_priority
-#SBATCH --qos=user_qos_rgutenk
-#SBATCH --mail-type=ALL
-#SBATCH --mail-user=lnt@arizona.edu
-#SBATCH --nodes=1
-#SBATCH --ntasks=50
-#SBATCH --mem=250gb
-#SBATCH --time=24:00:00
-
 import stdpopsim
-import tskit
-import pickle
-import multiprocess as mp
 import numpy as np
+import multiprocess as mp
+
 
 def simulate_ts(args):
     # load dfe and demography args
@@ -48,17 +32,14 @@ def simulate_ts(args):
 
     # simulate tree sequence
     ts = engine.simulate(
-        model,
-        contig,
-        samples,
-        seed=seed,
-        slim_scaling_factor=10,
-        slim_burn_in=10)
+        model, contig, samples, seed=seed, slim_scaling_factor=10, slim_burn_in=10
+    )
     # save output tree sequence
     # ts.dump(f"simulations/{str(args)}.trees")
 
     return ts
-    
+
+
 def get_dfe_params(n_gammas, n_reps, seed=None):
     # set random seed
     np.random.seed(seed)
@@ -69,11 +50,13 @@ def get_dfe_params(n_gammas, n_reps, seed=None):
         T = np.random.random() * 1.99 + 0.01
         nu = np.random.random() * 4 - 2
         initial_size = 7778
-        time = int(2*initial_size*T)
-        present_size = int(initial_size*10**nu)
+        time = int(2 * initial_size * T)
+        present_size = int(initial_size * 10**nu)
         for seed in range(n_reps):
             params_list.append((gamma_mean, gamma_shape, seed, time, present_size))
     return params_list
+
+
 
 arg_list_train = get_dfe_params(100, 5, seed=1)
 arg_list_test = get_dfe_params(50, 1, seed=100)
@@ -82,9 +65,9 @@ arg_list_test = get_dfe_params(50, 1, seed=100)
 with mp.Pool() as pool:
     test = pool.map(simulate_ts, arg_list_test)
 test_dict = dict(zip(arg_list_test, test))
-pickle.dump(test_dict, open('data/test_data_1B08_varied_full_range_scale_10.pickle', 'wb'))
+pickle.dump(test_dict, open('data/test_data_1T12_varied.pickle', 'wb'))
     
 with mp.Pool() as pool:
     train = pool.map(simulate_ts, arg_list_train)
 train_dict = dict(zip(arg_list_train, train))
-pickle.dump(train_dict, open('data/train_data_1B08_varied_full_range_scale_10.pickle', 'wb'))
+pickle.dump(train_dict, open('data/train_data_1T12_varied.pickle', 'wb'))

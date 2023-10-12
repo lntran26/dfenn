@@ -2,17 +2,27 @@ name: dfe-cnn
 channels:
   - conda-forge
 dependencies:
+  - python=3.11.4
   - pip
   - slim
-  - tensorflow
-  - scikit-learn=1.2.0
+  - msprime
   - scipy
   - numpy
   - matplotlib
+  - seaborn
   - ipykernel
   - dadi
   - multiprocess
   - stdpopsim
   - dadi-cli
+  - scikit-learn
+  - cudatoolkit=11.8.0
   - pip:
     - scikit-allel
+    - nvidia-cudnn-cu11==8.6.0.163
+    - tensorflow==2.12.*
+    - keras-tuner
+    - "typer[all]"
+    - pytest
+    - pylint
+    - flake8
