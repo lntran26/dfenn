@@ -5,6 +5,7 @@ dependencies:
   - pip
   - slim
   - tensorflow
+  - scikit-learn=1.2.0
   - scipy
   - numpy
   - matplotlib
