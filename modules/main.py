@@ -10,7 +10,7 @@ import tensorflow as tf
 import keras_tuner as kt
 from train_cnn import *
 from process_data import *
-from validate import plot_all_gamma_results
+from validate import *
 
 app = typer.Typer()
 
@@ -67,14 +67,14 @@ def train(
     else:
         # request a model
         input_shape = train_in.shape[1:]
-        n_outputs = 2
+        n_outputs = 3
         model, kwargs = create_dfe_cnn(input_shape, n_outputs)
 
         # set training data, epochs and validation data
         kwargs.update(
             x=train_in,
             y=train_out,
-            batch_size=10,
+            # batch_size=10,
             epochs=30,
             # validation_data=(test_in, test_out),
         )
@@ -89,7 +89,8 @@ def train(
 
 @app.command()
 def validate(
-    val_data_in_path: str, val_data_out_path: str, model_path: str, results_path: str
+    val_data_in_path: str, val_data_out_path: str, model_path: str, results_path: str,
+    ld_results: Annotated[bool, typer.Option()] = False,
 ):
     # load model
     loaded_model = tf.keras.models.load_model(model_path)
@@ -97,7 +98,10 @@ def validate(
     test_in = pickle.load(open(f"{val_data_in_path}", "rb"))
     test_out = pickle.load(open(f"{val_data_out_path}", "rb"))
 
-    plot_all_gamma_results(loaded_model, test_in, test_out, results_path)
+    if ld_results:
+        plot_LD_results(loaded_model, test_in, test_out, results_path)
+    else:
+        plot_all_gamma_results(loaded_model, test_in, test_out, results_path)
 
 
 @app.command()

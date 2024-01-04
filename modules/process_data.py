@@ -108,11 +108,14 @@ def process_labels(param: tuple):
     # there params[0] is the mean and params[1] is the shape
 
     # calculate scale param from mean and shape, convert to log scale
-    scale_log = np.log10(12378 * param[0] / param[1])
+    # scale_log = np.log10(12378 * param[0] / param[1])
     # convert shape to log scale and use absolute value
     # remove absolute value conversion for now
+    
+    # modify this temporarily for LD labels
+    return param[0], param[1], param[2]
 
-    return (scale_log, abs(np.log10(param[1])))
+    # return (scale_log, abs(np.log10(param[1])))
 
 
 def scramble_snp_tensor(snp_tensor, scramble_row=True, free_scramble=False, seed=None):

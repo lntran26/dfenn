@@ -251,3 +251,27 @@ def plot_all_gamma_results(model, test_in, test_out, outdir: str):
             title=f"{p_from}≤|s|≤{p_to}",
         )
         plt.savefig(f"{outdir}/mean_{proportion[0]:.0e}_to_{proportion[1]:.0e}.png", transparent=True, dpi=150)
+
+
+def plot_LD_results(model, test_in, test_out, outdir: str):
+    # make outdir if necessary
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    
+    pred = model.predict(np.array(test_in))
+
+    for i, param in enumerate(['a', 'b', 'c']):
+    # calculate rmse in log for scale
+        rmse = root_mean_squared_error(pred[:, i], test_out[:, i])
+        rho = stats.spearmanr(pred[:, i], test_out[:, i])[0]
+
+        plot_accuracy_single(
+            list(test_out[:, i]),
+            list(pred[:, i]),
+            log=False,
+            size=[6, 2, 20],
+            rho=rho,
+            rmse=rmse,
+            title=param,
+        )
+        plt.savefig(f"{outdir}/{param}.png", transparent=True, dpi=150)

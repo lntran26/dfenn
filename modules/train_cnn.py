@@ -25,7 +25,7 @@ def create_dfe_cnn(input_shape: tuple, n_outputs: int):
             activation="relu",
         )
     )
-    model.add(layers.Dropout(0.2))
+    # model.add(layers.Dropout(0.2))
     model.add(layers.Conv1D(filters=32, kernel_size=3, activation="relu"))
     model.add(layers.Conv1D(filters=16, kernel_size=2, strides=2, activation="relu"))
     model.add(layers.AveragePooling2D(pool_size=(20, 1)))
